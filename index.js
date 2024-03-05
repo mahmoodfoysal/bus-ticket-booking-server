@@ -20,6 +20,7 @@ async function run() {
 
         const database = client.db("bus-ticket-booking");
         const bookingCollection = database.collection("booking");
+        const seatsCollection = database.collection('seats');
 
         app.post('/booking', async(req, res) => {
             const newBooking = req.body;
@@ -28,10 +29,23 @@ async function run() {
             res.send(result);
         });
 
+        app.post('/seats', async(req, res) => {
+            const newSeats = req.body;
+            console.log(newSeats);
+            const result = await seatsCollection.insertOne(newSeats);
+            res.send(result)
+        })
+
         app.get('/booking', async(req, res) => {
             const getData = bookingCollection.find();
             const result = await getData.toArray();
             res.send(result)
+        })
+
+        app.get('/seats', async(req, res) => {
+            const getSeats = seatsCollection.find();
+            const result = await getSeats.toArray();
+            res.send(result);
         })
 
 
