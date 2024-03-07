@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 const app = express()
 require('dotenv').config() // add for .env file access 
@@ -21,7 +21,9 @@ async function run() {
         const database = client.db("bus-ticket-booking");
         const bookingCollection = database.collection("booking");
         const seatsCollection = database.collection('seats');
+        // ---------------------------------------------------All Post Operation-------------------------------------------------------------
 
+        // api for post booking information 
         app.post('/booking', async(req, res) => {
             const newBooking = req.body;
             console.log(newBooking);
@@ -29,28 +31,46 @@ async function run() {
             res.send(result);
         });
 
+        // api for post seats items 
         app.post('/seats', async(req, res) => {
             const newSeats = req.body;
             console.log(newSeats);
             const result = await seatsCollection.insertOne(newSeats);
             res.send(result)
-        })
+        });
+        // ---------------------------------------------------All get Operation-------------------------------------------------------------
 
+        // api for get data from booking collection 
         app.get('/booking', async(req, res) => {
             const getData = bookingCollection.find();
             const result = await getData.toArray();
             res.send(result)
         })
 
+        // api for get data from seat collection 
         app.get('/seats', async(req, res) => {
             const getSeats = seatsCollection.find();
             const result = await getSeats.toArray();
             res.send(result);
-        })
+        });
 
+        // ---------------------------------------------------All patch Operation-------------------------------------------------------------
 
-
-
+        // api for update booking status in seat plan 
+        app.patch('/seats', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateSeatInformation = req.body;
+            console.log(updateSeatInformation);
+        
+            const updateDoc = {
+                $set: {
+                    status: updateSeatInformation.status
+                }
+            };
+            const result = await seatsCollection.updateMany(filter, updateDoc);
+            res.send(result);
+        });
 
 
 
