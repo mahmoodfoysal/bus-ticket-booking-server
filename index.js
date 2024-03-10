@@ -24,7 +24,7 @@ async function run() {
         // ---------------------------------------------------All Post Operation-------------------------------------------------------------
 
         // api for post booking information 
-        app.post('/booking', async(req, res) => {
+        app.post('/booking', async (req, res) => {
             const newBooking = req.body;
             console.log(newBooking);
             const result = await bookingCollection.insertOne(newBooking);
@@ -32,7 +32,7 @@ async function run() {
         });
 
         // api for post seats items 
-        app.post('/seats', async(req, res) => {
+        app.post('/seats', async (req, res) => {
             const newSeats = req.body;
             console.log(newSeats);
             const result = await seatsCollection.insertOne(newSeats);
@@ -41,14 +41,14 @@ async function run() {
         // ---------------------------------------------------All get Operation-------------------------------------------------------------
 
         // api for get data from booking collection 
-        app.get('/booking', async(req, res) => {
+        app.get('/booking', async (req, res) => {
             const getData = bookingCollection.find();
             const result = await getData.toArray();
             res.send(result)
         })
 
         // api for get data from seat collection 
-        app.get('/seats', async(req, res) => {
+        app.get('/seats', async (req, res) => {
             const getSeats = seatsCollection.find();
             const result = await getSeats.toArray();
             res.send(result);
@@ -57,19 +57,34 @@ async function run() {
         // ---------------------------------------------------All patch Operation-------------------------------------------------------------
 
         // api for update booking status in seat plan 
-        app.patch('/seats', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) };
+        app.patch('/booking/:id', async (req, res) => {
+            const userToUpdateId = req.params.id; // Use req.params.id to get the user ID from the request URL
+            const filter = {
+                "_id": new ObjectId(userToUpdateId)
+            };
             const updateSeatInformation = req.body;
             console.log(updateSeatInformation);
-        
-            const updateDoc = {
-                $set: {
-                    status: updateSeatInformation.status
-                }
+
+            const update = {
+                $set: {}
             };
-            const result = await seatsCollection.updateMany(filter, updateDoc);
-            res.send(result);
+
+            // Assuming that updateSeatInformation contains seatIdsToUpdate and newStatus
+            updateSeatInformation.seatIdsToUpdate.forEach((seatId) => {
+                update.$set[`seatInformation.$[elem${seatId}].status`] = updateSeatInformation.newStatus;
+            });
+
+            const arrayFilters = updateSeatInformation.seatIdsToUpdate.map((seatId) => ({
+                [`elem${seatId}._id`]: new ObjectId(seatId)
+            }));
+
+            const options = {
+                arrayFilters: arrayFilters
+            };
+
+            const result = await usersCollection.updateOne(filter, update, options);
+
+            console.log(result);
         });
 
 
